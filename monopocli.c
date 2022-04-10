@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 struct Board createBoard();
 void propConst(char *name, int cost, int rent, struct Property *location);
