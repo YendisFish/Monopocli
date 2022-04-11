@@ -1,24 +1,6 @@
 import os
 import subprocess
 
-def get_uname() -> str:
-    r, w = os.pipe()
-    pid = os.fork()
-
-    ret = ""
-
-    if pid == 0:
-        os.close(r)
-
-        os.execvp("/usr/bin/whoami", ["/usr/bin/whoami"])
-    else:
-        if pid > 0:
-            os.close(w)
-            
-            for i in os.read(r, 1024 * 1024 * 1024):
-                ret = ret + i
-    return ret
-
 uname = subprocess.check_output("whoami").decode("utf-8").strip()
 
 print(uname)
