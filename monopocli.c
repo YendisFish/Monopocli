@@ -4,21 +4,43 @@
 #include <string.h>
 #include <time.h>
 
-struct Board createBoard();
+struct Board * createBoard();
 void propConst(char *name, int cost, int rent, struct Property *location);
 int GenRand();
 
 int main() {
-    struct Board board = createBoard();
+    struct Board *board = createBoard();
 
     //Set RNG seed
     srand(time(NULL));
     fflush(stdout);
 
     while(1) {
-        for(int i = 0; i < board.players; i++) {
-            if(board.playerlist[i].Location == 0) {
-                board.playerlist[i].Money = board.playerlist[i].Money + 200;
+        for(int i = 0; i < board->players; i++) {
+            if(i == board->players - 1) {
+                if(board->playerlist[i].Money <= 0) {
+                    free(board->properties);
+                    free(board->playerlist);
+                    free(board);
+                    exit(0);
+                }
+            }
+            if(board->playerlist[i].Money <= 0) {
+                continue;
+            }
+            
+            if(board->playerlist[i].Money > 0) {
+                break;
+            }
+        }
+
+        for(int i = 0; i < board->players; i++) {
+            if(board->playerlist[i].Money <= 0) {
+                continue;
+            }
+
+            if(board->playerlist[i].Location == 0) {
+                board->playerlist[i].Money = board->playerlist[i].Money + 200;
             }
 
             printf("It is your turn player ");
@@ -30,68 +52,71 @@ int main() {
 
             int roll = GenRand();
 
-            printf("You rolled \n%d\n", roll + board.playerlist[i].Location);
+            printf("You rolled \n%d\n", roll + board->playerlist[i].Location);
 
-            if(roll + board.playerlist[i].Location > 8) {
-                int over = (roll + board.playerlist[i].Location) - 8;
-                board.playerlist[i].Location = 0 + over;
+            if(roll + board->playerlist[i].Location > 8) {
+                int over = (roll + board->playerlist[i].Location) - 8;
+                board->playerlist[i].Location = 0 + over;
 
-                if(board.properties[board.playerlist[i].Location].owner == NULL) {
+                if(board->properties[board->playerlist[i].Location].owner == NULL) {
                     fflush(stdout);
 
-                    printf("Do you want to buy %s for %d > ", board.properties[board.playerlist[i].Location].name, board.properties[board.playerlist[i].Location].cost);
+                    printf("Do you want to buy %s for %d > ", board->properties[board->playerlist[i].Location].name, board->properties[board->playerlist[i].Location].cost);
 
                     char dobuy[3];
                     scanf("%s", dobuy);
 
                     if(strcmp(dobuy, "yes") == 0) {
-                        board.properties[board.playerlist[i].Location].owner = &board.playerlist[i];
-                        board.playerlist[i].Money = board.playerlist[i].Money - board.properties[board.playerlist[i].Location].cost;
+                        board->properties[board->playerlist[i].Location].owner = &board->playerlist[i];
+                        board->playerlist[i].Money = board->playerlist[i].Money - board->properties[board->playerlist[i].Location].cost;
 
                         fflush(stdout);
 
-                        printf("Your new balance: %d\n", board.playerlist[i].Money);
+                        printf("Your new balance: %d\n", board->playerlist[i].Money);
                     }
                 } else {
                     fflush(stdout);
-                    printf("This place is owned! You must pay %d\n", board.properties[board.playerlist[i].Location].rent);
+                    printf("This place is owned! You must pay %d\n", board->properties[board->playerlist[i].Location].rent);
 
-                    board.properties[board.playerlist[i].Location].owner->Money = board.properties[board.playerlist[i].Location].owner->Money - board.properties[board.playerlist[i].Location].rent;
+                    board->properties[board->playerlist[i].Location].owner->Money = board->properties[board->playerlist[i].Location].owner->Money - board->properties[board->playerlist[i].Location].rent;
 
                     fflush(stdout);
-                    printf("New Balance %d\n", board.playerlist[i].Money);
+                    printf("New Balance %d\n", board->playerlist[i].Money);
                 }
             } else {
-                board.playerlist[i].Location = board.playerlist[i].Location + roll;
+                board->playerlist[i].Location = board->playerlist[i].Location + roll;
                 
-                if(board.properties[board.playerlist[i].Location].owner == NULL) {
+                if(board->properties[board->playerlist[i].Location].owner == NULL) {
                     fflush(stdout);
 
-                    printf("Do you want to buy %s for %d > ", board.properties[board.playerlist[i].Location].name, board.properties[board.playerlist[i].Location].cost);
+                    printf("Do you want to buy %s for %d > ", board->properties[board->playerlist[i].Location].name, board->properties[board->playerlist[i].Location].cost);
 
                     char dobuy[3];
                     scanf("%s", dobuy);
 
                     if(strcmp(dobuy, "yes") == 0) {
-                        board.properties[board.playerlist[i].Location].owner = &board.playerlist[i];
-                        board.playerlist[i].Money = board.playerlist[i].Money - board.properties[board.playerlist[i].Location].cost;
+                        board->properties[board->playerlist[i].Location].owner = &board->playerlist[i];
+                        board->playerlist[i].Money = board->playerlist[i].Money - board->properties[board->playerlist[i].Location].cost;
 
                         fflush(stdout);
 
-                        printf("Your new balance: %d\n", board.playerlist[i].Money);
+                        printf("Your new balance: %d\n", board->playerlist[i].Money);
                     }
                 } else {
                     fflush(stdout);
-                    printf("This place is owned! You must pay %d\n", board.properties[board.playerlist[i].Location].rent);
+                    printf("This place is owned! You must pay %d\n", board->properties[board->playerlist[i].Location].rent);
 
-                    board.properties[board.playerlist[i].Location].owner->Money = board.properties[board.playerlist[i].Location].owner->Money - board.properties[board.playerlist[i].Location].rent;
+                    board->properties[board->playerlist[i].Location].owner->Money = board->properties[board->playerlist[i].Location].owner->Money - board->properties[board->playerlist[i].Location].rent;
 
                     fflush(stdout);
-                    printf("New Balance %d\n", board.playerlist[i].Money);
+                    printf("New Balance %d\n", board->playerlist[i].Money);
                 }
             }
         }
     }
+
+    free(board);
+    exit(0);
 
     return 0;
 }
@@ -101,7 +126,7 @@ int GenRand() {
     return dice1;
 }
 
-struct Board createBoard() {
+struct Board * createBoard() {
     struct Board *board = malloc(sizeof(struct Board));
 
     printf("How many players will there be > ");
@@ -131,7 +156,7 @@ struct Board createBoard() {
 
     board->properties = loc;
 
-    return *board;
+    return board;
 }
 
 void propConst(char *name, int cost, int rent, struct Property *location) {
